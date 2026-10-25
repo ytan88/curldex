@@ -1,0 +1,79 @@
+# Written by `curldex verify`: examples that ran against the service.
+# Only the command and the response's shape are kept, no data.
+delete-anything:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -X DELETE -H ''Accept: application/json'' ''https://httpbin.org/delete'''
+  shape: '{args: {}, data: string, files: {}, form: {}, headers: {Accept: string, <key>: string, Host: string},
+    json: null, origin: string, url: string}'
+get-headers:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -H ''Accept: application/json'' -H ''X-Demo: hello'' ''https://httpbin.org/headers'''
+  shape: '{headers: {Accept: string, <key>: string, Host: string}}'
+get-path:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -H ''Accept: application/json'' ''https://httpbin.org/anything/a/b/c'''
+  shape: '{args: {}, data: string, files: {}, form: {}, headers: {Accept: string, <key>: string, Host: string},
+    json: null, method: string, origin: string, url: string}'
+get-query:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -H ''Accept: application/json'' ''https://httpbin.org/get?q=curldex&limit=3&exact=true&tags=a&tags=b&sort=new'''
+  shape: '{args: {exact: string, limit: string, q: string, sort: string, tags[]: string}, headers: {Accept: string,
+    <key>: string, Host: string}, origin: string, url: string}'
+get-status:
+  date: '2026-10-25'
+  status: 204
+  command: 'curl -q -sS -g --compressed -H ''Accept: application/json'' ''https://httpbin.org/status/204'''
+  shape: 'null'
+patch-json:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -X PATCH -H ''Accept: application/json'' --json ''{"title": "Hello"}'' ''https://httpbin.org/patch'''
+  shape: '{args: {}, data: string, files: {}, form: {}, headers: {Accept: string, <key>: string, Host: string},
+    json: {title: string}, origin: string, url: string}'
+post-form:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -H ''Accept: application/json'' --data-urlencode ''name=Ada Lovelace'' --data-urlencode
+    ''meta[team]=core'' --data-urlencode ''tags[0]=x'' --data-urlencode ''tags[1]=y'' ''https://httpbin.org/post'''
+  shape: '{args: {}, data: string, files: {}, form: {<key>: string, name: string}, headers: {Accept: string, <key>:
+    string, Host: string}, json: null, origin: string, url: string}'
+post-json:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -H ''Accept: application/json'' --json ''{"title": "Hello", "count": 2, "meta":
+    {"team": "core"}}'' ''https://httpbin.org/post'''
+  shape: '{args: {}, data: string, files: {}, form: {}, headers: {Accept: string, <key>: string, Host: string},
+    json: {count: integer, meta: {team: string}, title: string}, origin: string, url: string}'
+post-raw:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -H ''Accept: application/json'' -H ''Content-Type: text/plain'' --data-raw
+    ''line one
+
+    line two'' ''https://httpbin.org/post'''
+  shape: '{args: {}, data: string, files: {}, form: {}, headers: {Accept: string, <key>: string, Host: string},
+    json: null, origin: string, url: string}'
+post-whole-json:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -H ''Accept: application/json'' --json ''{"title": "Hello", "items": [1, 2]}''
+    ''https://httpbin.org/post'''
+  shape: '{args: {}, data: string, files: {}, form: {}, headers: {Accept: string, <key>: string, Host: string},
+    json: {items[]: integer, title: string}, origin: string, url: string}'
+put-json:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -X PUT -H ''Accept: application/json'' --json ''{"title": "Hello"}'' ''https://httpbin.org/put'''
+  shape: '{args: {}, data: string, files: {}, form: {}, headers: {Accept: string, <key>: string, Host: string},
+    json: {title: string}, origin: string, url: string}'
+upload-file:
+  date: '2026-10-25'
+  status: 200
+  command: 'curl -q -sS -g --compressed -H ''Accept: application/json'' --form-string ''caption=a test file'' -F ''file=@"<path_to_a_file>"''
+    ''https://httpbin.org/post'''
+  shape: '{args: {}, data: string, files: {file: string}, form: {caption: string}, headers: {Accept: string, <key>:
+    string, Host: string}, json: null, origin: string, url: string}'

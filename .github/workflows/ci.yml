@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.15"]  # the oldest supported and the newest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0  # this action publishes exact versions only, no moving v10 tag
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: uv sync --locked
+      - name: Lint
+        run: uv run ruff check
+      - name: Test (offline)
+        run: uv run pytest -q
+      - name: Build, and check that no secret file is packed
+        if: matrix.python-version == '3.15'
+        run: |
+          # one file of each kind source-exclude in pyproject.toml leaves out
+          for name in credentials.yaml .state.json .curlrc api.yaml.bak .env .env.local x.pem x.key x.har x.flow \
+                      x.cookies client_secret_x.json service_account_x.json 'credentials.yaml~' .credentials.yaml.swp .api.yaml.un~; do
+            echo x > "curldex/apps/httpbin/config/$name"; done
+          uv build
+          if { unzip -l dist/*.whl; tar tzf dist/*.tar.gz; } | grep -E 'credentials\.yaml|\.state\.json|\.curlrc|\.bak|\.env|\.pem|\.key|\.har|\.flow|\.cookies|client_secret|service_account|~|\.sw[po]'; then
+            echo "A secret file was packed: add it to source-exclude in pyproject.toml"; exit 1
+          fi

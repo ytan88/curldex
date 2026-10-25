@@ -1,0 +1,222 @@
+# Written by `curldex verify`: examples that ran against the service.
+# Only the command and the response's shape are kept, no data.
+acl-delete:
+  date: '2026-10-11'
+  status: 204
+  command: curl -q -sS -g -X DELETE -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/calendars/<calendarId>/acl/<ruleId>'
+  shape: 'null'
+acl-get:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/acl/<ruleId>'
+  shape: '{kind: string, etag: string, id: string, scope: {type: string, value: string}, role: string}'
+acl-insert:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -K "$(curldex auth google_calendar)" --json ''{"role": "reader", "scope": {"type": "user",
+    "value": "sam@example.com"}}'' ''https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/acl?sendNotifications=false'''
+  shape: '{kind: string, etag: string, id: string, scope: {type: string, value: string}, role: string}'
+acl-list:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/acl'
+  shape: '{kind: string, etag: string, nextSyncToken: string, items[]: {kind: string, etag: string, id: string,
+    scope: {type: string, value: string}, role: string}}'
+acl-patch:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -X PATCH -K "$(curldex auth google_calendar)" --json ''{"role": "writer"}'' ''https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/acl/<rule_id>'''
+  shape: '{kind: string, etag: string, id: string, scope: {type: string, value: string}, role: string}'
+acl-update:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -X PUT -K "$(curldex auth google_calendar)" --json ''{"role": "reader", "scope": {"type":
+    "user", "value": "sam@example.com"}}'' ''https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/acl/<rule_id>'''
+  shape: '{kind: string, etag: string, id: string, scope: {type: string, value: string}, role: string}'
+calendar-list-delete:
+  date: '2026-10-11'
+  status: 204
+  command: curl -q -sS -g -X DELETE -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/users/me/calendarList/<subscribed_calendar_id>'
+  shape: 'null'
+calendar-list-get:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/users/me/calendarList/<calendar_id>'
+  shape: '{kind: string, etag: string, id: string, summary: string, timeZone: string, dataOwner: string, colorId:
+    string, backgroundColor: string, foregroundColor: string, selected: boolean, accessRole: string, defaultReminders[]:
+    ?, conferenceProperties: {allowedConferenceSolutionTypes[]: string}}'
+calendar-list-insert:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -K "$(curldex auth google_calendar)" --json ''{"id": "en.usa#holiday@group.v.calendar.google.com"}''
+    ''https://www.googleapis.com/calendar/v3/users/me/calendarList'''
+  shape: '{kind: string, etag: string, id: string, summary: string, description: string, timeZone: string, colorId:
+    string, backgroundColor: string, foregroundColor: string, selected: boolean, accessRole: string, defaultReminders[]:
+    ?, conferenceProperties: {allowedConferenceSolutionTypes[]: string}}'
+calendar-list-patch:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -X PATCH -K "$(curldex auth google_calendar)" --json ''{"summaryOverride": "Team", "colorId":
+    "7"}'' ''https://www.googleapis.com/calendar/v3/users/me/calendarList/<calendar_id>'''
+  shape: '{kind: string, etag: string, id: string, summary: string, timeZone: string, dataOwner: string, colorId:
+    string, backgroundColor: string, foregroundColor: string, selected: boolean, accessRole: string, defaultReminders[]:
+    ?, conferenceProperties: {allowedConferenceSolutionTypes[]: string}}'
+calendar-list-update:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -X PUT -K "$(curldex auth google_calendar)" --json ''{"summaryOverride": "Team", "selected":
+    true}'' ''https://www.googleapis.com/calendar/v3/users/me/calendarList/<calendar_id>'''
+  shape: '{kind: string, etag: string, id: string, summary: string, timeZone: string, dataOwner: string, colorId:
+    string, backgroundColor: string, foregroundColor: string, selected: boolean, accessRole: string, defaultReminders[]:
+    ?, conferenceProperties: {allowedConferenceSolutionTypes[]: string}}'
+calendars-delete:
+  date: '2026-10-11'
+  status: 204
+  command: curl -q -sS -g -X DELETE -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/calendars/<calendarId>'
+  shape: 'null'
+calendars-get:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/calendars/<calendar_id>'
+  shape: '{kind: string, etag: string, id: string, summary: string, timeZone: string, dataOwner: string, conferenceProperties:
+    {allowedConferenceSolutionTypes[]: string}, labelProperties: {eventLabels[]: {id: string, backgroundColor: string}}}'
+calendars-insert:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -K "$(curldex auth google_calendar)" --json ''{"summary": "Team", "timeZone": "America/Los_Angeles"}''
+    ''https://www.googleapis.com/calendar/v3/calendars'''
+  shape: '{kind: string, etag: string, id: string, summary: string, timeZone: string, dataOwner: string, conferenceProperties:
+    {allowedConferenceSolutionTypes[]: string}, labelProperties: {eventLabels[]: {id: string, backgroundColor: string}}}'
+calendars-patch:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -X PATCH -K "$(curldex auth google_calendar)" --json ''{"description": "Team events"}''
+    ''https://www.googleapis.com/calendar/v3/calendars/<calendar_id>'''
+  shape: '{kind: string, etag: string, id: string, summary: string, description: string, timeZone: string, dataOwner:
+    string, conferenceProperties: {allowedConferenceSolutionTypes[]: string}, labelProperties: {eventLabels[]: {id:
+    string, backgroundColor: string}}}'
+calendars-update:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -X PUT -K "$(curldex auth google_calendar)" --json ''{"summary": "Team", "timeZone":
+    "America/Los_Angeles"}'' ''https://www.googleapis.com/calendar/v3/calendars/<calendar_id>'''
+  shape: '{kind: string, etag: string, id: string, summary: string, timeZone: string, dataOwner: string, conferenceProperties:
+    {allowedConferenceSolutionTypes[]: string}, labelProperties: {eventLabels[]: {id: string, backgroundColor: string}}}'
+colors-get:
+  date: '2026-10-25'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/colors'
+  shape: '{kind: string, updated: string, calendar: {<key>: {background: string, foreground: string}}, event: {<key>:
+    {background: string, foreground: string}}}'
+create-event:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -K "$(curldex auth google_calendar)" --json ''{"summary": "Dentist", "start": {"dateTime":
+    "2026-10-12T15:00:00-07:00"}, "end": {"dateTime": "2026-10-12T15:45:00-07:00"}}'' ''https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events'''
+  shape: '{kind: string, etag: string, id: string, status: string, htmlLink: string, created: string, updated: string,
+    summary: string, creator: {email: string}, organizer: {email: string, displayName: string, self: boolean}, start:
+    {dateTime: string, timeZone: string}, end: {dateTime: string, timeZone: string}, iCalUID: string, sequence:
+    integer, reminders: {useDefault: boolean}, eventType: string}'
+delete-event:
+  date: '2026-10-11'
+  status: 204
+  command: curl -q -sS -g -X DELETE -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events/<event_id>'
+  shape: 'null'
+events-import:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -K "$(curldex auth google_calendar)" --json ''{"iCalUID": "dentist-20261012@example.com",
+    "summary": "Dentist", "start": {"dateTime": "2026-10-12T15:00:00-07:00"}, "end": {"dateTime": "2026-10-12T15:45:00-07:00"}}''
+    ''https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events/import'''
+  shape: '{kind: string, etag: string, id: string, status: string, htmlLink: string, created: string, updated: string,
+    summary: string, creator: {email: string}, organizer: {email: string, displayName: string, self: boolean}, start:
+    {dateTime: string, timeZone: string}, end: {dateTime: string, timeZone: string}, recurrence[]: string, iCalUID:
+    string, sequence: integer, reminders: {useDefault: boolean}, eventType: string}'
+events-instances:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events/<recurring_event_id>/instances?maxResults=5'
+  shape: '{kind: string, etag: string, summary: string, description: string, updated: string, timeZone: string,
+    accessRole: string, defaultReminders[]: ?, nextSyncToken: string, items[]: {kind: string, etag: string, id:
+    string, status: string, htmlLink: string, created: string, updated: string, summary: string, creator: {email:
+    string}, organizer: {email: string, displayName: string, self: boolean}, start: {dateTime: string, timeZone:
+    string}, end: {dateTime: string, timeZone: string}, recurringEventId: string, originalStartTime: {dateTime:
+    string, timeZone: string}, iCalUID: string, sequence: integer, reminders: {useDefault: boolean}, eventType:
+    string}}'
+events-move:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" --json '{}' 'https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events/<event_id>/move?destination=<other_calendar_id>'
+  shape: '{kind: string, etag: string, id: string, status: string, htmlLink: string, created: string, updated: string,
+    summary: string, creator: {email: string}, organizer: {email: string, displayName: string}, start: {dateTime:
+    string, timeZone: string}, end: {dateTime: string, timeZone: string}, iCalUID: string, sequence: integer, reminders:
+    {useDefault: boolean}, eventType: string}'
+events-update:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -X PUT -K "$(curldex auth google_calendar)" --json ''{"summary": "Dentist", "start":
+    {"dateTime": "2026-10-12T16:00:00-07:00"}, "end": {"dateTime": "2026-10-12T16:45:00-07:00"}}'' ''https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events/<event_id>'''
+  shape: '{kind: string, etag: string, id: string, status: string, htmlLink: string, created: string, updated: string,
+    summary: string, creator: {email: string}, organizer: {email: string, displayName: string, self: boolean}, start:
+    {dateTime: string, timeZone: string}, end: {dateTime: string, timeZone: string}, iCalUID: string, sequence:
+    integer, reminders: {useDefault: boolean}, eventType: string}'
+freebusy-query:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -K "$(curldex auth google_calendar)" --json ''{"timeMin": "2026-10-12T00:00:00-07:00",
+    "timeMax": "2026-10-13T00:00:00-07:00", "items": [{"id": "primary"}]}'' ''https://www.googleapis.com/calendar/v3/freeBusy'''
+  shape: '{kind: string, timeMin: string, timeMax: string, calendars: {<key>: {busy[]: {...}}}}'
+get-event:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events/<event_id>'
+  shape: '{kind: string, etag: string, id: string, status: string, htmlLink: string, created: string, updated: string,
+    summary: string, creator: {email: string}, organizer: {email: string, displayName: string, self: boolean}, start:
+    {dateTime: string, timeZone: string}, end: {dateTime: string, timeZone: string}, iCalUID: string, sequence:
+    integer, reminders: {useDefault: boolean}, eventType: string}'
+get-setting:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/users/me/settings/timezone'
+  shape: '{kind: string, etag: string, id: string, value: string}'
+list-calendars:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/users/me/calendarList'
+  shape: '{kind: string, etag: string, nextSyncToken: string, items[]: {kind: string, etag: string, id: string,
+    summary: string, description: string, timeZone: string, colorId: string, backgroundColor: string, foregroundColor:
+    string, selected: boolean, accessRole: string, defaultReminders[]: ?, conferenceProperties: {allowedConferenceSolutionTypes[]:
+    string}, dataOwner: string, notificationSettings: {notifications[]: {...}}, primary: boolean}}'
+list-events:
+  date: '2026-10-24'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events?timeMin=2026-10-12T00:00:00-07:00&maxResults=5&singleEvents=true&orderBy=startTime'
+  shape: '{kind: string, etag: string, summary: string, description: string, updated: string, timeZone: string,
+    accessRole: string, defaultReminders[]: {method: string, minutes: integer}, items[]: {kind: string, etag: string,
+    id: string, status: string, htmlLink: string, created: string, updated: string, summary: string, creator: {email:
+    string, self: boolean}, organizer: {email: string, self: boolean}, start: {dateTime: string, timeZone: string},
+    end: {dateTime: string, timeZone: string}, iCalUID: string, sequence: integer, reminders: {useDefault: boolean},
+    eventType: string}}'
+quick-add:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" --json '{}' 'https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events/quickAdd?text=Lunch%20with%20Sam%20tomorrow%2012pm'
+  shape: '{kind: string, etag: string, id: string, status: string, htmlLink: string, created: string, updated: string,
+    summary: string, creator: {email: string}, organizer: {email: string, displayName: string, self: boolean}, start:
+    {dateTime: string, timeZone: string}, end: {dateTime: string, timeZone: string}, iCalUID: string, sequence:
+    integer, reminders: {useDefault: boolean}, eventType: string}'
+settings-list:
+  date: '2026-10-11'
+  status: 200
+  command: curl -q -sS -g -K "$(curldex auth google_calendar)" 'https://www.googleapis.com/calendar/v3/users/me/settings'
+  shape: '{kind: string, etag: string, nextSyncToken: string, items[]: {kind: string, etag: string, id: string,
+    value: string}}'
+update-event:
+  date: '2026-10-11'
+  status: 200
+  command: 'curl -q -sS -g -X PATCH -K "$(curldex auth google_calendar)" --json ''{"summary": "Dentist (moved)"}''
+    ''https://www.googleapis.com/calendar/v3/calendars/<calendar_id>/events/<event_id>'''
+  shape: '{kind: string, etag: string, id: string, status: string, htmlLink: string, created: string, updated: string,
+    summary: string, creator: {email: string}, organizer: {email: string, displayName: string, self: boolean}, start:
+    {dateTime: string, timeZone: string}, end: {dateTime: string, timeZone: string}, iCalUID: string, sequence:
+    integer, reminders: {useDefault: boolean}, eventType: string}'

@@ -1,0 +1,66 @@
+[build-system]
+requires = ["uv_build>=0.10.9,<0.14"]
+build-backend = "uv_build"
+
+[project]
+name = "curldex"
+version = "0.1.0"
+description = "A Python toolbox that finds, documents and runs the right curl command for any web API"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Max Tan" }]
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6"]
+keywords = ["curl", "rest", "api", "http", "oauth2", "openapi", "ipython", "cli"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Framework :: IPython",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/ytan88/curldex"
+Repository = "https://github.com/ytan88/curldex"
+Issues = "https://github.com/ytan88/curldex/issues"
+Changelog = "https://github.com/ytan88/curldex/blob/HEAD/CHANGELOG.md"
+Author = "https://github.com/ytan88"
+
+[project.scripts]
+curldex = "curldex.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.17", "ipython"]
+
+[tool.uv.build-backend]
+module-root = ""  # the package is ./curldex, not ./src/curldex
+# Every file under curldex/ is packaged, and .gitignore doesn't apply: each app's config/ also holds the
+# user's credentials and tokens. Keep this list in step with .gitignore, .claude/settings.json and CI.
+source-exclude = [
+    "credentials.yaml", ".state.json", ".curlrc", ".state.lock", "*.bak", ".env", ".env.*", "*.pem", "*.key",
+    "client_secret*.json", "service_account*.json", "*.har", "*.flow", "*.cookies", "*\\~", ".*.sw?", ".*.un\\~",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I", "UP", "SIM", "RET", "PIE", "C4", "PERF", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003", "RET503"]

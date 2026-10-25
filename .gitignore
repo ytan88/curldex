@@ -1,0 +1,43 @@
+# Secrets: never commit these. Builds don't read this file: keep source-exclude in pyproject.toml, the deny
+# rules in .claude/settings.json and the CI secret check in step.
+credentials.yaml
+.state.json
+.state.lock
+.curlrc
+*.bak
+.env
+.env.*
+*.pem
+*.key
+client_secret*.json
+service_account*.json
+*.har
+*.cookies
+*~
+.*.sw?
+.*.un~
+*.flow
+
+# Claude Code: per-user settings and notes (the shared .claude/settings.json and skills are tracked)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Python
+__pycache__/
+*.py[cod]
+dist/
+build/
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store

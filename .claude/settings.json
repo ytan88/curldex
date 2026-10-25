@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curldex apps)",
+      "Bash(.venv/bin/curldex apps)",
+      "Bash(curldex help:*)",
+      "Bash(.venv/bin/curldex help:*)",
+      "Bash(curldex check:*)",
+      "Bash(.venv/bin/curldex check:*)"
+    ],
+    "deny": [
+      "Read(./curldex/apps/*/config/credentials.yaml)",
+      "Read(./curldex/apps/*/config/.state.json)",
+      "Read(./curldex/apps/*/config/.curlrc)",
+      "Read(./curldex/apps/*/config/*.pem)",
+      "Read(./curldex/apps/*/config/*.key)",
+      "Read(./curldex/apps/*/config/.env)",
+      "Read(./curldex/apps/*/config/.env.*)",
+      "Read(./curldex/apps/*/config/client_secret*.json)",
+      "Read(./curldex/apps/*/config/service_account*.json)",
+      "Read(./curldex/apps/*/config/*.har)",
+      "Read(./curldex/apps/*/config/*.flow)",
+      "Read(./curldex/apps/*/config/*.bak)",
+      "Read(./curldex/apps/*/config/*.cookies)",
+      "Read(./curldex/apps/*/config/*~)",
+      "Read(./curldex/apps/*/config/.*.sw?)",
+      "Read(./curldex/apps/*/config/.*.un~)"
+    ]
+  }
+}

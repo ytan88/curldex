@@ -1,0 +1,116 @@
+# httpbin.org answers every request with what it received, so it shows exactly what curl sends.
+# A reference package: one API per request shape curldex supports. No credentials, nothing stored.
+# Docs: https://httpbin.org
+
+description: httpbin.org - echoes HTTP requests back; every request shape, as a reference
+base_url: https://httpbin.org
+auth: {type: none}
+headers:
+  Accept: application/json                 # sent with every call
+curl_options: [--compressed]               # more curl options for every call
+
+commands:
+  get-query:
+    description: Query params of each type; answers with what it received in args
+    path: /get
+    params:
+      q: {description: Text}
+      limit: {type: integer, default: 10}
+      exact: {type: boolean}
+      tags: {type: array, description: Repeated as tags=a&tags=b}
+      sort: {enum: [new, old]}
+    example: {q: curldex, limit: 3, exact: true, tags: [a, b], sort: new}
+
+  get-headers:
+    description: A header param; answers with the request's headers
+    path: /headers
+    params:
+      X-Demo: {in: header, description: "Any text (httpbin's load balancer drops some names, such as X-Request-Id)"}
+    example: {X-Demo: hello}
+
+  get-path:
+    description: A path value that keeps its slashes (reserved)
+    path: /anything/{path}
+    params:
+      path: {reserved: true, description: 'Any path, such as a/b/c'}
+    example: {path: a/b/c}
+
+  get-status:
+    description: Answers with the given HTTP status and no body
+    path: /status/{code}
+    params:
+      code: {type: integer, description: 'An HTTP status, such as 204'}
+    example: {code: 204}
+
+  post-json:
+    description: A JSON body built from fields; answers with it in json
+    method: POST
+    path: /post
+    params:
+      title: {required: true}
+      count: {type: integer}
+      meta: {type: object, description: Any JSON object}
+    example: {title: Hello, count: 2, meta: {team: core}}
+
+  post-whole-json:
+    description: A whole JSON body given as one value (in json)
+    method: POST
+    path: /post
+    params:
+      body: {in: json, type: object, required: true}
+    example: {body: {title: Hello, items: [1, 2]}}
+
+  post-form:
+    description: A form body (application/x-www-form-urlencoded); nested values in brackets
+    method: POST
+    path: /post
+    format: form
+    params:
+      name: {required: true}
+      meta: {type: object, description: 'Sent as meta[key]=value'}
+      tags: {type: array, description: 'Sent as tags[0]=a&tags[1]=b'}
+    example: {name: Ada Lovelace, meta: {team: core}, tags: [x, y]}
+
+  upload-file:
+    description: A multipart body with a text field and a file
+    method: POST
+    path: /post
+    format: multipart
+    params:
+      caption: {}
+      file: {type: file, required: true, description: A local file's path}
+    example: {caption: a test file, file: <path_to_a_file>}
+
+  post-raw:
+    description: A raw body sent as it is, with its own Content-Type
+    method: POST
+    path: /post
+    format: raw
+    content_type: text/plain
+    params:
+      text: {in: json, type: string, required: true}
+    example: {text: 'line one
+
+    line two'}
+
+  put-json:
+    description: A PUT; httpbin stores nothing, so it replaces nothing
+    method: PUT
+    path: /put
+    access: write                          # PUT defaults to destructive; here nothing is replaced
+    params:
+      title: {}
+    example: {title: Hello}
+
+  patch-json:
+    description: A PATCH
+    method: PATCH
+    path: /patch
+    params:
+      title: {}
+    example: {title: Hello}
+
+  delete-anything:
+    description: A DELETE (destructive by its method, though httpbin deletes nothing)
+    method: DELETE
+    path: /delete

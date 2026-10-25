@@ -1,0 +1,50 @@
+# Copyright 2026 Max Tan
+# SPDX-License-Identifier: Apache-2.0
+# Google Calendar from IPython, with curl only. curldex lists the APIs and builds each curl command;
+# IPython's `!` runs it. Creates a test event, moves it, and deletes it again.
+#
+#     uv run ipython demo/google_calendar.ipy           (or paste the steps into IPython)
+#
+# Needs curldex/apps/google_calendar/config/credentials.yaml filled in (from credentials.example.yaml).
+# Step 0 logs in if needed. Uses jq to read the JSON.
+
+import json
+from datetime import datetime, time, timedelta
+
+import curldex
+
+cal = curldex.load_app("google_calendar")
+
+# ----- 0. Log in, once: the tokens are saved, and refreshed when they expire -----------------
+print(cal.status())                          # "ready", or what to do first
+if cal.status() != "ready":
+    cal.login()                              # opens the browser: sign in and allow access
+
+cal.apis()                                   # 1. what the API offers
+cal.help("list-events")                      #    one API's params and an example
+
+# ----- 2. Read: today's events ----------------------------------------------------------------
+today = datetime.combine(datetime.now().date(), time()).astimezone()
+cmd = cal.curl("list-events", timeMin=today.isoformat(), timeMax=(today + timedelta(days=1)).isoformat())
+print(cmd)                                   # the credentials come from `curldex auth`, never inline
+!{cmd} | jq -r '.items[] | (.start.dateTime // .start.date) + "  " + (.summary // "(no title)")'
+
+# ----- 3. Write: a test event an hour from now ------------------------------------------------
+start = (datetime.now().astimezone() + timedelta(hours=1)).replace(second=0, microsecond=0)
+title = f"test event - {datetime.now():%Y-%m-%d %H:%M:%S} (curldex demo)"
+cmd = cal.curl("create-event", summary=title, start={"dateTime": start.isoformat()},
+               end={"dateTime": (start + timedelta(minutes=30)).isoformat()})
+out = !{cmd}                                 # IPython keeps the output's lines
+event = json.loads(out.n)
+print("created:", event["summary"], event["start"]["dateTime"], event["htmlLink"])
+
+# ----- 4. Change it: 30 minutes later ---------------------------------------------------------
+later = start + timedelta(minutes=30)
+cmd = cal.curl("update-event", event_id=event["id"], start={"dateTime": later.isoformat()},
+               end={"dateTime": (later + timedelta(minutes=30)).isoformat()})
+!{cmd} | jq -r '"moved to " + .start.dateTime'
+
+# ----- 5. Clean up: delete it (destructive; Google answers 204 No Content) ----------------------
+cmd = cal.curl("delete-event", event_id=event["id"])
+print(cmd)
+!{cmd} -o /dev/null -w 'deleted: HTTP %{{http_code}}\n'    # {{ }}: a literal brace in IPython

@@ -1,0 +1,582 @@
+# Google Calendar API v3: https://developers.google.com/calendar/api/v3/reference
+# The first APIs are named for the GoogleCalendar helpers, which rely on their names and defaults;
+# the rest keep the names in Google's description of the API (source:, below).
+
+description: Google Calendar - calendars and events
+base_url: https://www.googleapis.com/calendar/v3
+
+# Google's login, or a service account key file: GoogleAuth in curldex/shared/google.py
+auth:
+  type: oauth2
+  scopes: [https://www.googleapis.com/auth/calendar]
+
+source:
+  url: https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest
+  exclude:                                 # left out on purpose, so `discover` doesn't offer them
+    - calendars-clear                      # deletes every event in the primary calendar
+    - calendars-transfer-ownership         # Google Workspace only
+    - "*-watch"                            # these and channels-stop need a public HTTPS webhook
+    - channels-stop
+
+commands:
+  list-calendars:
+    description: List the calendars the user can see
+    path: /users/me/calendarList
+
+  list-events:
+    description: List events in a time range
+    path: /calendars/{calendar_id}/events
+    params:
+      calendar_id: {default: "${calendar_id}", description: "Calendar ID: primary, or an email address"}
+      timeMin: {description: "Lower bound (RFC 3339 with offset), e.g. 2026-10-12T00:00:00-07:00"}
+      timeMax: {description: Upper bound (RFC 3339 with offset)}
+      q: {description: Free-text search}
+      maxResults: {type: integer, default: 25}
+      singleEvents: {type: boolean, default: true, description: Expand recurring events into instances}
+      orderBy: {default: startTime, enum: [startTime, updated], description: startTime needs singleEvents=true}
+      pageToken: {description: nextPageToken from the previous call}
+    example: {timeMin: '2026-10-12T00:00:00-07:00', maxResults: 5}
+
+  get-event:
+    description: Get one event
+    path: /calendars/{calendar_id}/events/{event_id}
+    params:
+      calendar_id: {default: "${calendar_id}"}
+    example: {event_id: <event_id>}
+
+  create-event:
+    description: Create an event
+    method: POST
+    path: /calendars/{calendar_id}/events
+    params:
+      calendar_id: {default: "${calendar_id}"}
+      summary: {required: true, description: Title}
+      start: {type: object, required: true, description: '{"dateTime": "2026-10-12T15:00:00-07:00"}, or {"date": "2026-10-12"} for all day'}
+      end: {type: object, required: true, description: Same form as start}
+      description: {}
+      location: {}
+      attendees: {type: array, description: '[{"email": "sam@example.com"}]'}
+    example:
+      summary: Dentist
+      start: {dateTime: '2026-10-12T15:00:00-07:00'}
+      end: {dateTime: '2026-10-12T15:45:00-07:00'}
+
+  quick-add:
+    description: Create an event from a sentence, such as "Lunch with Sam tomorrow 12pm"
+    method: POST
+    path: /calendars/{calendar_id}/events/quickAdd
+    params:
+      calendar_id: {default: "${calendar_id}"}
+      text: {in: query, required: true}
+    example: {text: Lunch with Sam tomorrow 12pm}
+
+  update-event:
+    description: Change some of an event's fields, e.g. move it to another time
+    method: PATCH
+    path: /calendars/{calendar_id}/events/{event_id}
+    params:
+      calendar_id: {default: "${calendar_id}"}
+      summary: {}
+      start: {type: object}
+      end: {type: object}
+      description: {}
+      location: {}
+    example: {event_id: <event_id>, summary: Dentist (moved)}
+
+  delete-event:
+    description: Delete an event
+    method: DELETE
+    path: /calendars/{calendar_id}/events/{event_id}
+    params:
+      calendar_id: {default: "${calendar_id}"}
+    example: {event_id: <event_id>}
+
+  get-setting:
+    description: One of the user's settings, such as timezone
+    path: /users/me/settings/{setting}
+    example: {setting: timezone}
+
+  # From here on, the names are Google's: `curldex discover google_calendar` lists any API in Google's
+  # description that this file lacks. calendarId defaults to calendar_id from credentials.yaml for
+  # reads and for single events; a call that changes a whole calendar or its sharing needs it given.
+  # The APIs left out on purpose are in source.exclude, above.
+  acl-delete:
+    method: DELETE
+    path: /calendars/{calendarId}/acl/{ruleId}
+    description: Deletes an access control rule.
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+      ruleId:
+        in: path
+        required: true
+        description: ACL rule identifier.
+    example: {calendarId: <calendarId>, ruleId: <ruleId>}
+  acl-get:
+    method: GET
+    path: /calendars/{calendarId}/acl/{ruleId}
+    description: Returns an access control rule.
+    params:
+      calendarId:
+        in: path
+        default: "${calendar_id}"
+        required: true
+        description: Calendar identifier.
+      ruleId:
+        in: path
+        required: true
+        description: ACL rule identifier.
+    example: {ruleId: <ruleId>}
+  acl-insert:
+    method: POST
+    path: /calendars/{calendarId}/acl
+    description: Creates an access control rule.
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+      sendNotifications:
+        in: query
+        type: boolean
+        description: Whether to send notifications about the calendar sharing change.
+      body:
+        in: json
+        type: object
+        description: 'AclRule object: etag, id, scope, kind, role'
+        required: true
+    example:
+      calendarId: <calendar_id>
+      sendNotifications: false
+      body:
+        role: reader
+        scope: {type: user, value: sam@example.com}
+  acl-list:
+    method: GET
+    path: /calendars/{calendarId}/acl
+    description: Returns the rules in the access control list for the calendar.
+    params:
+      calendarId:
+        in: path
+        default: "${calendar_id}"
+        required: true
+        description: Calendar identifier.
+      maxResults:
+        in: query
+        type: integer
+        description: Maximum number of entries returned on one result page.
+      pageToken:
+        in: query
+        description: Token specifying which result page to return.
+      showDeleted:
+        in: query
+        type: boolean
+        description: Whether to include deleted ACLs in the result.
+      syncToken:
+        in: query
+        description: Token obtained from the nextSyncToken field returned on the last page of results from the previous
+          list request.
+  acl-patch:
+    method: PATCH
+    path: /calendars/{calendarId}/acl/{ruleId}
+    description: Updates an access control rule.
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+      ruleId:
+        in: path
+        required: true
+        description: ACL rule identifier.
+      sendNotifications:
+        in: query
+        type: boolean
+        description: Whether to send notifications about the calendar sharing change.
+      body:
+        in: json
+        type: object
+        description: 'AclRule object: etag, id, scope, kind, role'
+        required: true
+    example: {calendarId: <calendar_id>, ruleId: <rule_id>, body: {role: writer}}
+  acl-update:
+    method: PUT
+    path: /calendars/{calendarId}/acl/{ruleId}
+    description: Updates an access control rule.
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+      ruleId:
+        in: path
+        required: true
+        description: ACL rule identifier.
+      sendNotifications:
+        in: query
+        type: boolean
+        description: Whether to send notifications about the calendar sharing change.
+      body:
+        in: json
+        type: object
+        description: 'AclRule object: etag, id, scope, kind, role'
+        required: true
+    example:
+      calendarId: <calendar_id>
+      ruleId: <rule_id>
+      body:
+        role: reader
+        scope: {type: user, value: sam@example.com}
+  calendar-list-delete:
+    method: DELETE
+    path: /users/me/calendarList/{calendarId}
+    description: Removes a calendar the user subscribes to from their calendar list (not one they own; delete that
+      with calendars-delete).
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+    example: {calendarId: <subscribed_calendar_id>}   # not a calendar you own
+  calendar-list-get:
+    method: GET
+    path: /users/me/calendarList/{calendarId}
+    description: Returns a calendar from the user's calendar list.
+    params:
+      calendarId:
+        in: path
+        default: "${calendar_id}"
+        required: true
+        description: Calendar identifier.
+  calendar-list-insert:
+    method: POST
+    path: /users/me/calendarList
+    description: Adds an existing calendar, such as a public holiday calendar, to the user's calendar list.
+    params:
+      colorRgbFormat:
+        in: query
+        type: boolean
+        description: Whether to use the foregroundColor and backgroundColor fields to write the calendar colors (RGB).
+      body:
+        in: json
+        type: object
+        description: 'CalendarListEntry object: backgroundColor, summaryOverride, accessRole, deleted, defaultReminders,
+          notificationSettings, selected, etag, location, colorId, dataOwner, foregroundColor, summary, description,
+          timeZone, autoAcceptInvitations, conferenceProperties, hidden, primary, kind, ...'
+        required: true
+    example: {body: {id: en.usa#holiday@group.v.calendar.google.com}}
+  calendar-list-patch:
+    method: PATCH
+    path: /users/me/calendarList/{calendarId}
+    description: Updates an existing calendar on the user's calendar list.
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+      colorRgbFormat:
+        in: query
+        type: boolean
+        description: Whether to use the foregroundColor and backgroundColor fields to write the calendar colors (RGB).
+      body:
+        in: json
+        type: object
+        description: 'CalendarListEntry object: backgroundColor, summaryOverride, accessRole, deleted, defaultReminders,
+          notificationSettings, selected, etag, location, colorId, dataOwner, foregroundColor, summary, description,
+          timeZone, autoAcceptInvitations, conferenceProperties, hidden, primary, kind, ...'
+        required: true
+    example: {calendarId: <calendar_id>, body: {summaryOverride: Team, colorId: '7'}}
+  calendar-list-update:
+    method: PUT
+    path: /users/me/calendarList/{calendarId}
+    description: Updates an existing calendar on the user's calendar list.
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+      colorRgbFormat:
+        in: query
+        type: boolean
+        description: Whether to use the foregroundColor and backgroundColor fields to write the calendar colors (RGB).
+      body:
+        in: json
+        type: object
+        description: 'CalendarListEntry object: backgroundColor, summaryOverride, accessRole, deleted, defaultReminders,
+          notificationSettings, selected, etag, location, colorId, dataOwner, foregroundColor, summary, description,
+          timeZone, autoAcceptInvitations, conferenceProperties, hidden, primary, kind, ...'
+        required: true
+    example: {calendarId: <calendar_id>, body: {summaryOverride: Team, selected: true}}
+  calendars-delete:
+    method: DELETE
+    path: /calendars/{calendarId}
+    description: Deletes a secondary calendar.
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+    example: {calendarId: <calendarId>}
+  calendars-get:
+    method: GET
+    path: /calendars/{calendarId}
+    description: Returns metadata for a calendar.
+    params:
+      calendarId:
+        in: path
+        default: "${calendar_id}"
+        required: true
+        description: Calendar identifier.
+  calendars-insert:
+    method: POST
+    path: /calendars
+    description: Creates a secondary calendar.
+    params:
+      body:
+        in: json
+        type: object
+        description: 'Calendar object: id, timeZone, description, labelProperties, dataOwner, summary, autoAcceptInvitations,
+          etag, conferenceProperties, kind, location'
+        required: true
+    example: {body: {summary: Team, timeZone: America/Los_Angeles}}
+  calendars-patch:
+    method: PATCH
+    path: /calendars/{calendarId}
+    description: Updates metadata for a calendar.
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+      body:
+        in: json
+        type: object
+        description: 'Calendar object: id, timeZone, description, labelProperties, dataOwner, summary, autoAcceptInvitations,
+          etag, conferenceProperties, kind, location'
+        required: true
+    example: {calendarId: <calendar_id>, body: {description: Team events}}
+  calendars-update:
+    method: PUT
+    path: /calendars/{calendarId}
+    description: Updates metadata for a calendar.
+    params:
+      calendarId:
+        in: path
+        required: true
+        description: Calendar identifier.
+      body:
+        in: json
+        type: object
+        description: 'Calendar object: id, timeZone, description, labelProperties, dataOwner, summary, autoAcceptInvitations,
+          etag, conferenceProperties, kind, location'
+        required: true
+    example: {calendarId: <calendar_id>, body: {summary: Team, timeZone: America/Los_Angeles}}
+  colors-get:
+    method: GET
+    path: /colors
+    description: Returns the color definitions for calendars and events.
+    params: {}
+  events-import:
+    method: POST
+    path: /calendars/{calendarId}/events/import
+    description: Imports an event.
+    params:
+      calendarId:
+        in: path
+        default: "${calendar_id}"
+        required: true
+        description: Calendar identifier.
+      conferenceDataVersion:
+        in: query
+        type: integer
+        description: Version number of conference data supported by the API client.
+      eventLabelVersion:
+        in: query
+        type: integer
+        description: Version number of the event label feature supported by the API client.
+      supportsAttachments:
+        in: query
+        type: boolean
+        description: Whether API client performing operation supports event attachments.
+      body:
+        in: json
+        type: object
+        description: 'Event object: start, eventLabelId, recurringEventId, sequence, colorId, extendedProperties,
+          reminders, iCalUID, locked, guestsCanInviteOthers, summary, focusTimeProperties, outOfOfficeProperties,
+          creator, originalStartTime, organizer, visibility, eventType, gadget, workingLocationProperties, ...'
+        required: true
+    example:
+      body:
+        iCalUID: dentist-20261012@example.com
+        summary: Dentist
+        start: {dateTime: '2026-10-12T15:00:00-07:00'}
+        end: {dateTime: '2026-10-12T15:45:00-07:00'}
+  events-instances:
+    method: GET
+    path: /calendars/{calendarId}/events/{eventId}/instances
+    description: Returns instances of the specified recurring event.
+    params:
+      calendarId:
+        in: path
+        default: "${calendar_id}"
+        required: true
+        description: Calendar identifier.
+      eventId:
+        in: path
+        required: true
+        description: Recurring event identifier.
+      alwaysIncludeEmail:
+        in: query
+        type: boolean
+        description: Deprecated and ignored.
+      maxAttendees:
+        in: query
+        type: integer
+        description: The maximum number of attendees to include in the response.
+      maxResults:
+        in: query
+        type: integer
+        description: Maximum number of events returned on one result page.
+      originalStart:
+        in: query
+        description: The original start time of the instance in the result.
+      pageToken:
+        in: query
+        description: Token specifying which result page to return.
+      showDeleted:
+        in: query
+        type: boolean
+        description: Whether to include deleted events (with status equals "cancelled") in the result.
+      timeMax:
+        in: query
+        description: Upper bound (exclusive) for an event's start time to filter by.
+      timeMin:
+        in: query
+        description: Lower bound (inclusive) for an event's end time to filter by.
+      timeZone:
+        in: query
+        description: Time zone used in the response.
+    example: {eventId: <recurring_event_id>, maxResults: 5}
+  events-move:
+    method: POST
+    path: /calendars/{calendarId}/events/{eventId}/move
+    description: Moves an event to another calendar, i.e. changes an event's organizer.
+    params:
+      calendarId:
+        in: path
+        default: "${calendar_id}"
+        required: true
+        description: Calendar identifier of the source calendar where the event currently is on.
+      eventId:
+        in: path
+        required: true
+        description: Event identifier.
+      destination:
+        in: query
+        required: true
+        description: Calendar identifier of the target calendar where the event is to be moved to.
+      sendNotifications:
+        in: query
+        type: boolean
+        description: Deprecated.
+      sendUpdates:
+        in: query
+        description: Guests who should receive notifications about the change of the event's organizer.
+        enum:
+        - all
+        - externalOnly
+        - none
+    example: {eventId: <event_id>, destination: <other_calendar_id>}
+  events-update:
+    method: PUT
+    path: /calendars/{calendarId}/events/{eventId}
+    description: Updates an event.
+    params:
+      calendarId:
+        in: path
+        default: "${calendar_id}"
+        required: true
+        description: Calendar identifier.
+      eventId:
+        in: path
+        required: true
+        description: Event identifier.
+      alwaysIncludeEmail:
+        in: query
+        type: boolean
+        description: Deprecated and ignored.
+      conferenceDataVersion:
+        in: query
+        type: integer
+        description: Version number of conference data supported by the API client.
+      eventLabelVersion:
+        in: query
+        type: integer
+        description: Version number of the event label feature supported by the API client.
+      maxAttendees:
+        in: query
+        type: integer
+        description: The maximum number of attendees to include in the response.
+      sendNotifications:
+        in: query
+        type: boolean
+        description: Deprecated.
+      sendUpdates:
+        in: query
+        description: Guests who should receive notifications about the event update (for example, title changes, etc.).
+        enum:
+        - all
+        - externalOnly
+        - none
+      supportsAttachments:
+        in: query
+        type: boolean
+        description: Whether API client performing operation supports event attachments.
+      body:
+        in: json
+        type: object
+        description: 'Event object: start, eventLabelId, recurringEventId, sequence, colorId, extendedProperties,
+          reminders, iCalUID, locked, guestsCanInviteOthers, summary, focusTimeProperties, outOfOfficeProperties,
+          creator, originalStartTime, organizer, visibility, eventType, gadget, workingLocationProperties, ...'
+        required: true
+    example:   # PUT replaces the event, so send all its fields
+      eventId: <event_id>
+      body:
+        summary: Dentist
+        start: {dateTime: '2026-10-12T16:00:00-07:00'}
+        end: {dateTime: '2026-10-12T16:45:00-07:00'}
+  freebusy-query:
+    method: POST
+    path: /freeBusy
+    description: Returns free/busy information for a set of calendars.
+    params:
+      body:
+        in: json
+        type: object
+        description: 'FreeBusyRequest object: timeMin, items, calendarExpansionMax, timeZone, groupExpansionMax, timeMax'
+        required: true
+    access: read
+    example:
+      body:
+        timeMin: '2026-10-12T00:00:00-07:00'
+        timeMax: '2026-10-13T00:00:00-07:00'
+        items:
+        - {id: primary}
+  settings-list:
+    method: GET
+    path: /users/me/settings
+    description: Returns all user settings for the authenticated user.
+    params:
+      maxResults:
+        in: query
+        type: integer
+        description: Maximum number of entries returned on one result page.
+      pageToken:
+        in: query
+        description: Token specifying which result page to return.
+      syncToken:
+        in: query
+        description: Token obtained from the nextSyncToken field returned on the last page of results from the previous
+          list request.
